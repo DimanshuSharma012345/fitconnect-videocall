@@ -7,23 +7,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// Render uses this variable for dynamic port binding
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; // ✅ Important for Render
 
-// ✅ Fix for Render’s working directory (important)
+// ✅ Serve static files correctly (Render-safe absolute path)
 const publicPath = path.join(process.cwd(), 'public');
 app.use(express.static(publicPath));
 
-// ✅ ROUTES
-// Client page (main)
+// ✅ Routes for client and trainer pages
 app.get('/', (req, res) => {
   res.sendFile(path.join(publicPath, 'client.html'));
 });
 
-// Trainer page
 app.get('/trainer', (req, res) => {
   res.sendFile(path.join(publicPath, 'trainer.html'));
 });
+
 
 // ====== SOCKET.IO LOGIC ======
 let queue = [];
