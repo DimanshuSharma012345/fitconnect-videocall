@@ -9,13 +9,18 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// ✅ Correct public folder path for Render
-const publicPath = path.join(__dirname, 'public');
-console.log("📁 Public path:", publicPath);
+// ✅ Dynamically handle Render’s weird “src” directory issue
+const rootDir = process.cwd().includes('/src')
+  ? path.join(process.cwd(), '..') // move one level up if in /src
+  : process.cwd();
 
+const publicPath = path.join(rootDir, 'public');
+console.log('📂 Serving public path from:', publicPath);
+
+// ✅ Serve static files
 app.use(express.static(publicPath));
 
-// ✅ Routes for client and trainer pages
+// ✅ Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(publicPath, 'client.html'));
 });
@@ -24,7 +29,7 @@ app.get('/trainer', (req, res) => {
   res.sendFile(path.join(publicPath, 'trainer.html'));
 });
 
-// ====== SOCKET.IO LOGIC ======
+// ===== SOCKET.IO LOGIC =====
 let queue = [];
 let trainerSocket = null;
 let durations = [];
@@ -110,7 +115,7 @@ function sendQueueUpdates() {
   });
 }
 
-// ====== START SERVER ======
+// ===== START SERVER =====
 server.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
