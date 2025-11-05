@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Session – FitConnect</title>
+  <style>
+    :root {
+      --primary: #00b894; /* green accent */
+      --accent: #ff7675;  /* coral pink */
+      --dark-bg: #0f172a; /* navy black */
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --text: #f1f5f9;
+      --radius: 16px;
+      --gap: 20px;
+      --shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0a0f1d, #111827);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--gap);
+      min-height: 100vh;
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 2rem;
+      margin-bottom: var(--gap);
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 15px rgba(0, 255, 200, 0.3);
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: var(--gap);
+      width: 100%;
+      max-width: 850px;
+      margin-bottom: var(--gap);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(0, 255, 200, 0.15);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--gap);
+      justify-content: center;
+    }
+
+    button {
+      flex: 1 1 140px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
+    }
+
+    button:disabled {
+      background: #333;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    #status {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 12px;
+      border-radius: var(--radius);
+      background: linear-gradient(90deg, #00b894, #00cec9);
+      color: #0f172a;
+      box-shadow: 0 0 20px rgba(0, 255, 200, 0.2);
+      animation: pulse 2s infinite;
+    }
+
+    #waitTime {
+      text-align: center;
+      font-weight: 500;
+      font-size: 1rem;
+      color: #a5f3fc;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .videos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+    }
+
+    video {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: var(--radius);
+      border: 2px solid var(--primary);
+      background: #000;
+      box-shadow: 0 0 10px rgba(0, 255, 200, 0.25);
+    }
+
+    #localVideo {
+      transform: scaleX(-1);
+    }
+
+    @media (max-width: 700px) {
+      .videos {
+        grid-template-columns: 1fr;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+      .controls {
+        flex-direction: column;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Client Video Session</h2>
+
+  <div class="card controls">
+    <button id="joinQueue">Join Trainer Queue</button>
+    <button id="muteBtn" disabled>Mute</button>
+    <button id="videoBtn" disabled>Stop Video</button>
+    <button id="switchBtn" disabled>Switch Cam</button>
+    <button id="hangupBtn" disabled>End Session</button>
+  </div>
+
+  <div class="card" id="status">Not connected</div>
+  <div class="card" id="waitTime">Estimated Wait Time: Calculating...</div>
+
+  <div class="card videos">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
+  <script type="module" src="./script.js"></script>
+</body>
+</html>
