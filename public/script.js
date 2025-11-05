@@ -1,5 +1,8 @@
 const socket = io();
-const isTrainer = window.location.pathname.includes('trainer'); // ✅ Detect trainer or client
+
+// ✅ Detect trainer or client (case-insensitive for Trainer.html)
+const isTrainer = window.location.pathname.toLowerCase().includes('trainer');
+
 let peer;
 let localStream;
 let remoteSocketId;
@@ -21,7 +24,7 @@ const nextBtn = document.getElementById('nextBtn');
 const joinQueueBtn = document.getElementById('joinQueue');
 const waitTimeDiv = document.getElementById('waitTime');
 
-// ✅ Access camera and mic
+// ====== CAMERA + MIC ACCESS ======
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
   .then(stream => {
     console.log("✅ Got local stream");
@@ -34,7 +37,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     enableControls();
 
     if (isTrainer) {
-      // Trainer registers with server
+      // Trainer registers
       socket.emit('register-trainer');
       nextBtn.onclick = () => {
         socket.emit('call-next');
@@ -54,7 +57,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     status.innerText = 'Camera or microphone access denied.';
   });
 
-// ✅ Control buttons setup
+// ====== BUTTON CONTROLS ======
 function enableControls() {
   if (muteBtn) {
     muteBtn.disabled = false;
@@ -109,15 +112,12 @@ function enableControls() {
 }
 
 // ====== SOCKET.IO COMMUNICATION ======
-
-// Trainer → Client connection
 socket.on('join-call', ({ trainerSocketId }) => {
   remoteSocketId = trainerSocketId;
   status.innerText = 'Trainer is calling...';
-  createPeer(true); // client initiates
+  createPeer(true);
 });
 
-// Client → Trainer connection
 socket.on('calling-client', ({ socketId, clientId }) => {
   if (!socketId) {
     status.innerText = 'No clients in the queue.';
@@ -126,10 +126,9 @@ socket.on('calling-client', ({ socketId, clientId }) => {
   }
   remoteSocketId = socketId;
   status.innerText = `Calling client ${clientId}...`;
-  createPeer(false); // trainer waits
+  createPeer(false);
 });
 
-// WebRTC signaling exchange
 socket.on('signal', ({ from, signal }) => {
   if (peer) {
     peer.signal(signal);
@@ -154,7 +153,7 @@ function createPeer(initiator) {
 
   peer.on('stream', stream => {
     remoteVideo.srcObject = stream;
-    status.innerText = 'Connected! Receiving remote stream.';
+    status.innerText = '✅ Connected! Receiving remote stream.';
     startTimer();
     socket.emit('start_call');
   });
@@ -190,7 +189,7 @@ function createPeer(initiator) {
   }
 }
 
-// Timer for session
+// ====== TIMER + WAIT TIME ======
 function startTimer() {
   startTime = Date.now();
   timerInterval = setInterval(() => {
@@ -201,7 +200,6 @@ function startTimer() {
   }, 1000);
 }
 
-// Wait time for clients
 socket.on('update_wait_time', avgTimeInMinutes => {
   if (!isTrainer && waitTimeDiv) {
     waitTimeDiv.textContent = `Estimated Wait Time: ${avgTimeInMinutes.toFixed(1)} minutes`;
