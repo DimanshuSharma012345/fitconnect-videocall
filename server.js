@@ -7,10 +7,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = process.env.PORT || 3000; // ✅ Important for Render
+const PORT = process.env.PORT || 3000;
 
-// ✅ Serve static files correctly (Render-safe absolute path)
-const publicPath = path.join(process.cwd(), 'public');
+// ✅ Correct public folder path for Render
+const publicPath = path.join(__dirname, 'public');
+console.log("📁 Public path:", publicPath);
+
 app.use(express.static(publicPath));
 
 // ✅ Routes for client and trainer pages
@@ -21,7 +23,6 @@ app.get('/', (req, res) => {
 app.get('/trainer', (req, res) => {
   res.sendFile(path.join(publicPath, 'trainer.html'));
 });
-
 
 // ====== SOCKET.IO LOGIC ======
 let queue = [];
