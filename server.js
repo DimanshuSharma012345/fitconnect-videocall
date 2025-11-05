@@ -33,13 +33,13 @@ app.use(express.static(publicPath));
 
 // ✅ Serve pages
 app.get("/", (req, res) => {
-  const file = path.join(publicPath, "client.html");
+  const file = path.join(publicPath, "Client.html");
   console.log("➡ Sending file:", file);
   res.sendFile(file);
 });
 
 app.get("/trainer", (req, res) => {
-  const file = path.join(publicPath, "trainer.html");
+  const file = path.join(publicPath, "Trainer.html");
   console.log("➡ Sending file:", file);
   res.sendFile(file);
 });
