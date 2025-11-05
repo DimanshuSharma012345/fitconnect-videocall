@@ -7,47 +7,45 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const PORT = 3000;
+// Render uses this variable for dynamic port binding
+const PORT = process.env.PORT || 3000;
 
-// ✅ Serve static files from the "public" folder
-app.use(express.static(path.join(__dirname, 'public')));
+// ✅ Fix for Render’s working directory (important)
+const publicPath = path.join(process.cwd(), 'public');
+app.use(express.static(publicPath));
 
 // ✅ ROUTES
 // Client page (main)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'client.html'));
+  res.sendFile(path.join(publicPath, 'client.html'));
 });
 
 // Trainer page
 app.get('/trainer', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'trainer.html'));
+  res.sendFile(path.join(publicPath, 'trainer.html'));
 });
 
 // ====== SOCKET.IO LOGIC ======
-
-let queue = []; // { socketId, clientId }
+let queue = [];
 let trainerSocket = null;
-let durations = []; // call durations (in minutes)
+let durations = [];
 let clientStartTimes = {};
 let currentCallClientId = null;
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
-  // When a Client joins the queue
   socket.on('join-queue', (clientId) => {
     queue.push({ socketId: socket.id, clientId });
     console.log(`Client ${clientId} joined the queue`);
     sendQueueUpdates();
   });
 
-  // When the Trainer registers
   socket.on('register-trainer', () => {
     trainerSocket = socket;
     console.log('Trainer registered:', socket.id);
   });
 
-  // Trainer calls the next Client
   socket.on('call-next', () => {
     if (!trainerSocket || queue.length === 0) return;
 
@@ -67,7 +65,6 @@ io.on('connection', (socket) => {
     sendQueueUpdates();
   });
 
-  // When a call ends
   socket.on('end_call', () => {
     const start = clientStartTimes[socket.id];
     if (start) {
@@ -84,12 +81,10 @@ io.on('connection', (socket) => {
     sendQueueUpdates();
   });
 
-  // Handle WebRTC signaling
   socket.on('signal', ({ to, signal }) => {
     io.to(to).emit('signal', { from: socket.id, signal });
   });
 
-  // Handle disconnects
   socket.on('disconnect', () => {
     queue = queue.filter((p) => p.socketId !== socket.id);
     delete clientStartTimes[socket.id];
@@ -102,7 +97,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// ====== HELPER FUNCTION ======
 function sendQueueUpdates() {
   const avg =
     durations.length > 0
